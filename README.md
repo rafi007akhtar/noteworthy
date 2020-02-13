@@ -8,3 +8,4 @@
     pip3 install opencv-python
     ```
 4. OpenVINO toolkit
+    Goto this [link](https://software.intel.com/en-us/openvino-toolkit/choose-download?) for installation, based on your OS.
