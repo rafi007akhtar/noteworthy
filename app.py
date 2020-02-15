@@ -1,8 +1,10 @@
 import argparse
 import cv2
 from inference import Network
+import numpy as np
 
 INPUT_STREAM = "input.mp4"
+MODEL_PATH = "models/intel/text-detection-0004/FP32/text-detection-0004.xml"
 # CPU_EXTENSION = "/opt/intel/openvino/deployment_tools/inference_engine/lib/intel64/libcpu_extension_sse4.so"
 CPU_EXTENSION = None
 # fourcc = 0X00000021
@@ -14,7 +16,7 @@ def get_args():
     Gets the arguments from the command line.
     '''
     parser = argparse.ArgumentParser("Run inference on an input video")
-    # -- Create the descriptions for the commands
+    # -- Create the descriptions for the comma*nds
     m_desc = "The location of the model XML file"
     i_desc = "The location of the input file"
     d_desc = "The device name, if not 'CPU'"
@@ -30,7 +32,7 @@ def get_args():
     optional = parser.add_argument_group('optional arguments')
 
     # -- Create the arguments
-    required.add_argument("-m", help=m_desc, required=True)
+    required.add_argument("-m", help=m_desc, default=MODEL_PATH)
     optional.add_argument("-i", help=i_desc, default=INPUT_STREAM)
     optional.add_argument("-d", help=d_desc, default='CPU')
     optional.add_argument("-c", help=c_desc, default="RED")
@@ -57,11 +59,19 @@ def draw_boxes(frame, res, args, width, height):
             ymin = int(box[4] * height)
             xmax = int(box[5] * width)
             ymax = int(box[6] * height)
+            # print("box params:", type(frame), type(xmin), type(ymin), type(xmax), type(ymax), type(convert_color(args.c)), 1)
+            # cv2.rectangle(img=frame, pt1=(xmin, ymin), pt2=(xmax, ymax), color=(255,0,0), thickness=1)
             cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), convert_color(args.c), 1)
     return frame
 
 
 def infer_on_video(args):
+    image_flag = False
+    if args.i == "CAM":
+        args.i = 0
+    elif args.i.endswith('jpg'):
+        image_flag = True
+        
     ### TODO: Initialize the Inference Engine
     plugin = Network()
 
@@ -80,7 +90,9 @@ def infer_on_video(args):
     # Create a video writer for the output video
     # The second argument should be `cv2.VideoWriter_fourcc('M','J','P','G')`
     # on Mac, and `0x00000021` on Linux
-    out = cv2.VideoWriter('out.mp4', fourcc, 30, (width,height))
+    out = None
+    if not image_flag:
+        out = cv2.VideoWriter('out.mp4', fourcc, 30, (width, height))
     
     # Process frames until the video ends, or process is exited
     while cap.isOpened():
@@ -89,29 +101,48 @@ def infer_on_video(args):
         if not flag:
             break
         key_pressed = cv2.waitKey(60)
-
-        ### TODO: Pre-process the frame
-        prepro = cv2.resize(frame, (shape[3], shape[2]))
-        prepro = prepro.transpose((2,0,1))
-        prepro = prepro.reshape(1, *prepro.shape)
-
-        ### TODO: Perform inference on the frame
-        plugin.async_inference(prepro)
-
-        ### TODO: Get the output of inference
-        if plugin.wait() == 0:
-            res = plugin.extract_output()
-            ### TODO: Update the frame to include detected bounding boxes
+        
+        if image_flag:
+            print("image")
+            ### TODO: Pre-process the frame
+            prepro = cv2.resize(frame, (shape[3], shape[2]))
+            prepro = prepro.transpose((2,0,1))
+            prepro = prepro.reshape(1, *prepro.shape)
+            ### TODO: Perform inference on the frame
+            plugin.async_inference(prepro)
+    
+            ### TODO: Get the output of inference
+            if plugin.wait() == 0:
+                res = plugin.extract_output()
             frame = draw_boxes(frame, res, args, width, height)
-            # Write out the frame
-            out.write(frame)
+            cv2.imwrite("out.jpg", frame)
+            
+
+        else: 
+            print("video")
+            ### TODO: Pre-process the frame
+            prepro = cv2.resize(frame, (shape[3], shape[2]))
+            prepro = prepro.transpose((2,0,1))
+            prepro = prepro.reshape(1, *prepro.shape)
+            ### TODO: Perform inference on the frame
+            plugin.async_inference(prepro)
+    
+            ### TODO: Get the output of inference
+            if plugin.wait() == 0:
+                res = plugin.extract_output()
+     
+                ### TODO: Update the frame to include detected bounding boxes
+                frame = draw_boxes(frame, res, args, width, height)
+                # Write out the frame
+                out.write(frame)
         
         # Break if escape key pressed
         if key_pressed == 27:
             break
 
     # Release the out writer, capture, and destroy any OpenCV windows
-    out.release()
+    if not image_flag: 
+        out.release()
     cap.release()
     cv2.destroyAllWindows()
 
