@@ -1,3 +1,9 @@
 {
-    "images": ["input.jpg", "input_2.jpeg"]
+    "input": "input.pdf",
+    "output": "outputs/notes.txt",
+    "jpegopt": {
+        "quality": "100",
+        "progressive": "True",
+        "optimize": "True"
+    }
 }
