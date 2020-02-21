@@ -9,6 +9,14 @@
     ```
 4. OpenVINO toolkit
     Goto this [link](https://software.intel.com/en-us/openvino-toolkit/choose-download?) for installation, based on your OS.
+5. Poppler
+    ```sh
+    sudo apt install poppler-utils
+    ```
+6. Pdf2Image
+    ```sh
+    pip3 install pdf2image
+    ```
 
 ## Initialize the environment variables
 ```sh
