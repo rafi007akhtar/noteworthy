@@ -2,9 +2,13 @@ import argparse
 import cv2
 import numpy as np
 import os
+import logging as log
 
 from openvino.inference_engine import IECore, IENetwork
 import json
+
+import pdffed
+from time import time
 
 DETECTOR_PATH = "models/intel/text-spotting-0001-detector/FP32/text-spotting-0001-detector.xml"
 ENCODER_PATH = "models/intel/text-spotting-0001-recognizer-encoder/FP32/text-spotting-0001-recognizer-encoder.xml"
@@ -63,6 +67,10 @@ def perform_inference(args):
     Performs inference on an input image, given a model.
     '''
     
+    # Start the timer
+    t1 = time()
+    
+    print("TASK 1 of 3: Load the models")
     # Get all the XML and BIN paths for all the models
     detector_xml = args.detp
     detector_bin = get_bin(detector_xml)
@@ -83,6 +91,7 @@ def perform_inference(args):
     detector_exec = ie.load_network(network=detector_net, device_name=args.d, num_requests=2)
     encoder_exec = ie.load_network(network=encoder_net, device_name=args.d)
     decoder_exec = ie.load_network(network=decoder_net, device_name=args.d)
+    print("TASK 1 DONE. All three models are loaded\n")
     
     # Obtain all the shapes needed
     hidden_shape = decoder_net.inputs["prev_hidden"].shape
@@ -93,21 +102,36 @@ def perform_inference(args):
     del encoder_net
     del decoder_net
     
-    # Create a new dump file for texts
-    f = open("dump.txt", "w")
+    # Get all the settings
+    options = None
+    with open("options.json", "r") as f:
+        options = json.load(f)
+    
+    # Create a new output file for texts
+    f = open(options["output"], "w")
     f.close()
     
+    print("TASK 2 OF 3: Retrieve pages from the PDF document")
     # Get all the images
-    images = None
-    with open("options.json") as f:
-        options = json.load(f)
-        images = options["images"]
+    number_of_pages, image_objs = pdffed.pdf_to_images()
+    pdffed.save_images(image_objs)
+    
+    images = []
+    for i in range(number_of_pages):
+        image = "temp/img-{}.jpeg".format(i)
+        images.append(image)
     if not images:
         images = [args.i]
+    print("TASK 2 DONE. Total {} pages retrieved\n".format(len(images)))
     
+    print("TASK 3 OF 3: Extract text from all pages")
     # Now loop through all the images, and perform inference on each one of them
-    for input_image in images:
+    for i in range(len(images)):
+        page_number = i
+        print("Extracting text from page {} of {}".format(page_number+1, len(images)))
+        
         # Read the input image texts
+        input_image = images[i]
         image = cv2.imread(input_image)
         scale_x = w / image.shape[1]
         scale_y = h / image.shape[0]
@@ -180,16 +204,22 @@ def perform_inference(args):
         # print(texts)
         
         # Now dump the texts onto a text file
-        with open("dump.txt", "a") as f:
+        with open(options["output"], "a") as f:
             for text in texts:
                 text = str(text) + " "
                 f.write(text)
             f.write("\n\n")
-
+        print("Text extracted from page {}".format(page_number+1))
+    
+    print("TASK 3 DONE. Please check the output file for the notes.\n")
 
     # Save down the resulting image
     # cv2.imwrite("outputs/{}-output.png".format(args.t), output_image)
     # cv2.imwrite("outputs/mask.png", mask)
+    
+    t2 = time()
+    
+    print("This entire operation was done in {:.2f} minutes".format((t2-t1)/60))
 
 
 def main():
