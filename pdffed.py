@@ -34,6 +34,12 @@ def save_images(images):
         image = images[i]
         image.save(".tmp/img-{}.jpeg".format(i))
 
+def remove_image(index):
+    '''
+    Remove one of the images, identified by its index
+    '''
+    os.remove(".tmp/img-{}.jpeg".format(index))
+    
 def remove_temp():
     '''
     Removes the temp folder along with all its contents

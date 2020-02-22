@@ -54,7 +54,7 @@ def perform_inference():
     # Start the timer
     t1 = time()
     
-    print("TASK 1 of {}: Load the models".format(TOTAL_TASKS))
+    print("TASK 1 OF {}: Load the models".format(TOTAL_TASKS))
     # Get all the XML and BIN paths for all the models
     detector_xml = DETECTOR_PATH
     detector_bin = get_bin(detector_xml)
@@ -120,9 +120,9 @@ def perform_inference():
         image_size = image.shape[:2]
         image = np.pad(
             image, (
-            (0, h - image_size[0]), 
-            (0, w - image_size[1]),
-            (0, 0)
+                (0, h - image_size[0]), 
+                (0, w - image_size[1]),
+                (0, 0)
             ),
             mode='constant', constant_values=0
         )
@@ -178,6 +178,8 @@ def perform_inference():
                 text += ALPHABET[prev_symbol_index]
                 hidden = decoder_output["hidden"]
             texts.append(text)
+            
+        pdffed.remove_image(index)
             
         # Now dump the texts onto a text file
         dump_text(texts)
