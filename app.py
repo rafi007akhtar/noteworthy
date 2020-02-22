@@ -1,155 +1,201 @@
 import argparse
 import cv2
-from inference import Network
 import numpy as np
+import os
 
-INPUT_STREAM = "input.mp4"
-MODEL_PATH = "models/intel/text-detection-0004/FP32/text-detection-0004.xml"
-# CPU_EXTENSION = "/opt/intel/openvino/deployment_tools/inference_engine/lib/intel64/libcpu_extension_sse4.so"
-CPU_EXTENSION = None
-# fourcc = 0X00000021
-fourcc = cv2.VideoWriter_fourcc('m','p','4','v')
-# fourcc = cv2.cv.CV_FOURCC(*'H264')
+from openvino.inference_engine import IECore, IENetwork
+import json
 
-def get_args():
+import pdffed
+from time import time
+
+# Get all the settings
+options = None
+with open("options.json", "r") as f:
+    options = json.load(f)
+
+# Get the mandatory options
+DETECTOR_PATH = options["detector_model_xml"]
+ENCODER_PATH = options["encoder_model_xml"]
+DECODER_PATH = options["decoder_model_xml"]
+THRESHOLD = float(options["probability_threshold"])
+ALPHABET = options["alphabet"]
+DEVICE = options["device_name"]
+
+# Get the other options
+CPU_EXT = options["CPU_extenstion_path"]
+
+SOS_INDEX = 0
+MAX_SEQ_LEN = 28
+EOS_INDEX = 1
+TOTAL_TASKS = 3
+
+def get_bin(xml):
     '''
-    Gets the arguments from the command line.
+    Given an XML path, return the corresponding BIN path
     '''
-    parser = argparse.ArgumentParser("Run inference on an input video")
-    # -- Create the descriptions for the comma*nds
-    m_desc = "The location of the model XML file"
-    i_desc = "The location of the input file"
-    d_desc = "The device name, if not 'CPU'"
-    ### TODO: Add additional arguments and descriptions for:
-    ###       1) Different confidence thresholds used to draw bounding boxes
-    ###       2) The user choosing the color of the bounding boxes
-    c_desc = "The color of the bounding box to draw: RED, GREEN, or BLUE"
-    ct_desc = "The confidence threshold"
+    return os.path.splitext(xml)[0] + ".bin"
 
-    # -- Add required and optional groups
-    parser._action_groups.pop()
-    required = parser.add_argument_group('required arguments')
-    optional = parser.add_argument_group('optional arguments')
+def dump_text(texts):
+    '''
+    Dump the texts obtained onto the output file
+    '''
+    with open(options["output"], "a") as f:
+        for text in texts:
+            text = str(text) + " "
+            f.write(text)
+        f.write("\n\n")
 
-    # -- Create the arguments
-    required.add_argument("-m", help=m_desc, default=MODEL_PATH)
-    optional.add_argument("-i", help=i_desc, default=INPUT_STREAM)
-    optional.add_argument("-d", help=d_desc, default='CPU')
-    optional.add_argument("-c", help=c_desc, default="RED")
-    optional.add_argument("-ct", help=ct_desc, default=0.5)
-    args = parser.parse_args()
-
-    return args
-
-def convert_color(color):
-    colors = {"RED": (0, 0, 255), "GREEN": (0, 255, 0), "BLUE": (255, 0, 0)}
-    converted_color = colors[color]
-    if converted_color:
-        return converted_color
-    return colors["RED"]
+def perform_inference():
+    '''
+    Performs inference on an input image, given a model.
+    '''
     
-def draw_boxes(frame, res, args, width, height):
-    """
-    Draw the bouding boxes on the frame
-    """
-    for box in res[0][0]:
-        conf = box[2]
-        if conf >= float(args.ct):
-            xmin = int(box[3] * width)
-            ymin = int(box[4] * height)
-            xmax = int(box[5] * width)
-            ymax = int(box[6] * height)
-            # print("box params:", type(frame), type(xmin), type(ymin), type(xmax), type(ymax), type(convert_color(args.c)), 1)
-            # cv2.rectangle(img=frame, pt1=(xmin, ymin), pt2=(xmax, ymax), color=(255,0,0), thickness=1)
-            cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), convert_color(args.c), 1)
-    return frame
+    # Start the timer
+    t1 = time()
+    
+    print("TASK 1 of {}: Load the models".format(TOTAL_TASKS))
+    # Get all the XML and BIN paths for all the models
+    detector_xml = DETECTOR_PATH
+    detector_bin = get_bin(detector_xml)
+    
+    encoder_xml = ENCODER_PATH
+    encoder_bin = get_bin(encoder_xml)
+    
+    decoder_xml = DECODER_PATH
+    decoder_bin = get_bin(decoder_xml)
 
-
-def infer_on_video(args):
-    image_flag = False
-    if args.i == "CAM":
-        args.i = 0
-    elif args.i.endswith('jpg'):
-        image_flag = True
+    # Get network instances for all models
+    ie = IECore()
+    if CPU_EXT and "CPU" in DEVICE:
+        ie.add_extension(CPU_EXT, "CPU")
+    detector_net = IENetwork(model=detector_xml, weights=detector_bin)
+    encoder_net = IENetwork(model=encoder_xml, weights=encoder_bin)
+    decoder_net = IENetwork(model=decoder_xml, weights=decoder_bin)
+    
+    # Load these networks
+    detector_exec = ie.load_network(network=detector_net, device_name=DEVICE, num_requests=2)
+    encoder_exec = ie.load_network(network=encoder_net, device_name=DEVICE)
+    decoder_exec = ie.load_network(network=decoder_net, device_name=DEVICE)
+    print("TASK 1 DONE. All three models are loaded\n")
+    
+    # Obtain all the shapes needed
+    hidden_shape = decoder_net.inputs["prev_hidden"].shape
+    n, c, h, w = detector_net.inputs["im_data"].shape
+    
+    # The networks are no longer needed, so get rid of them
+    del detector_net
+    del encoder_net
+    del decoder_net
+    
+    # Create a new output file for texts
+    f = open(options["output"], "w")
+    f.close()
+    
+    print("TASK 2 OF {}: Retrieve pages from the PDF document".format(TOTAL_TASKS))
+    # Get all the images
+    number_of_pages, image_objs = pdffed.pdf_to_images()
+    pdffed.save_images(image_objs)
+    
+    images = []
+    for i in range(number_of_pages):
+        image = ".tmp/img-{}.jpeg".format(i)
+        images.append(image)
+    len_images = len(images)
+    print("TASK 2 DONE. Total {} pages retrieved\n".format(len_images))
+    
+    print("TASK 3 OF {}: Extract text from all pages".format(TOTAL_TASKS))
+    # Now loop through all the images, and perform inference on each one of them
+    for index in range(len_images):
+        print("Extracting text from page {} of {}".format(index+1, len_images))
         
-    ### TODO: Initialize the Inference Engine
-    plugin = Network()
-
-    ### TODO: Load the network model into the IE
-    exec_net = plugin.load_model(model=args.m, device=args.d, cpu_extension=CPU_EXTENSION)
-    shape = plugin.get_input_shape()
-
-    # Get and open video capture
-    cap = cv2.VideoCapture(args.i)
-    cap.open(args.i)
-
-    # Grab the shape of the input 
-    width = int(cap.get(3))
-    height = int(cap.get(4))
-
-    # Create a video writer for the output video
-    # The second argument should be `cv2.VideoWriter_fourcc('M','J','P','G')`
-    # on Mac, and `0x00000021` on Linux
-    out = None
-    if not image_flag:
-        out = cv2.VideoWriter('out.mp4', fourcc, 30, (width, height))
-    
-    # Process frames until the video ends, or process is exited
-    while cap.isOpened():
-        # Read the next frame
-        flag, frame = cap.read()
-        if not flag:
-            break
-        key_pressed = cv2.waitKey(60)
+        # Read the input image texts
+        input_image = images[index]
+        image = cv2.imread(input_image)
+        scale_x = w / image.shape[1]
+        scale_y = h / image.shape[0]
+        image = cv2.resize(image, (w, h))
         
-        if image_flag:
-            print("image")
-            ### TODO: Pre-process the frame
-            prepro = cv2.resize(frame, (shape[3], shape[2]))
-            prepro = prepro.transpose((2,0,1))
-            prepro = prepro.reshape(1, *prepro.shape)
-            ### TODO: Perform inference on the frame
-            plugin.async_inference(prepro)
+        # Apply preprocessing on the image
+        image_size = image.shape[:2]
+        image = np.pad(
+            image, (
+            (0, h - image_size[0]), 
+            (0, w - image_size[1]),
+            (0, 0)
+            ),
+            mode='constant', constant_values=0
+        )
+        image = image.transpose((2, 0, 1))
+        image = image.reshape((n, c, h, w)).astype(np.float32)
+        
+        # Get the info for inference
+        info = np.asarray([[image_size[0], image_size[1], 1]], dtype=np.float32)
     
-            ### TODO: Get the output of inference
-            if plugin.wait() == 0:
-                res = plugin.extract_output()
-            frame = draw_boxes(frame, res, args, width, height)
-            cv2.imwrite("out.jpg", frame)
+        # Perform first inference - for text spotting - and parse the output
+        output = detector_exec.infer({"im_data": image, "im_info": info})
+    
+        boxes = output["boxes"]
+        scores = output["scores"]
+        classes = output["classes"].astype(np.uint32)
+        rms = output["raw_masks"]
+        tfs = output["text_features"]
+        
+        # Filter out low-confidence entries
+        filter_condition = scores > THRESHOLD
+        boxes = boxes[filter_condition]
+        scores = scores[filter_condition]
+        classes = classes[filter_condition]
+        rms = rms[filter_condition]
+        tfs = tfs[filter_condition]
+        
+        boxes[:, 0::2] /= scale_x
+        boxes[:, 1::2] /= scale_y
+        
+        texts = []
+        for tf in tfs:
+            # Perform the second inference - for text encoding
+            tf = encoder_exec.infer({"input": tf})["output"]
+            tf = np.reshape(tf, (tf.shape[0], tf.shape[1], -1))
+            tf = np.transpose(tf, (0,2,1))
             
-
-        else: 
-            print("video")
-            ### TODO: Pre-process the frame
-            prepro = cv2.resize(frame, (shape[3], shape[2]))
-            prepro = prepro.transpose((2,0,1))
-            prepro = prepro.reshape(1, *prepro.shape)
-            ### TODO: Perform inference on the frame
-            plugin.async_inference(prepro)
+            hidden = np.zeros(hidden_shape) 
+            prev_symbol_index = np.ones((1,)) * SOS_INDEX
     
-            ### TODO: Get the output of inference
-            if plugin.wait() == 0:
-                res = plugin.extract_output()
-     
-                ### TODO: Update the frame to include detected bounding boxes
-                frame = draw_boxes(frame, res, args, width, height)
-                # Write out the frame
-                out.write(frame)
+            text = ""
+            # Peform the third inference - for text decoding
+            for i in range(MAX_SEQ_LEN):
+                decoder_output = decoder_exec.infer({
+                    "prev_symbol": prev_symbol_index,
+                    "prev_hidden": hidden,
+                    "encoder_outputs": tf
+                })
+    
+                symbols_distr = decoder_output["output"]
+                prev_symbol_index = int(np.argmax(symbols_distr, axis=1))
+                if prev_symbol_index == EOS_INDEX or prev_symbol_index >= len(ALPHABET):
+                    break
+                text += ALPHABET[prev_symbol_index]
+                hidden = decoder_output["hidden"]
+            texts.append(text)
+            
+        # Now dump the texts onto a text file
+        dump_text(texts)
         
-        # Break if escape key pressed
-        if key_pressed == 27:
-            break
-
-    # Release the out writer, capture, and destroy any OpenCV windows
-    if not image_flag: 
-        out.release()
-    cap.release()
-    cv2.destroyAllWindows()
+        print("Text extracted from page {}".format(index+1))
+    
+    print("TASK 3 DONE. Please check the output file for the notes\n")
+    
+    # Clear the temp files
+    pdffed.remove_temp()
+    
+    # Finally, stop the timer, and report time
+    t2 = time()
+    print("This entire operation was done in {:.2f} minutes".format((t2-t1)/60))
 
 
 def main():
-    args = get_args()
-    infer_on_video(args)
+    perform_inference()
 
 
 if __name__ == "__main__":
