@@ -2,6 +2,9 @@
 
 Edge application that converts written notes from a PDF into text.
 
+<img src="images/example-input.png">
+<img src="images/example-output.png">
+
 ## Quick Usage
 ```sh
 git clone https://github.com/rafi007akhtar/noteworthy.git
