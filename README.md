@@ -2,13 +2,14 @@
 
 Edge application that converts written notes from a PDF into text.
 
-### Example Input Image
-The following image shows the first two pages of an input file containing some notes.
-<img src="images/example-input.png" title="Example Input Image">
+### Example Input and Output
+The set of images below show an input-output situation.
+- **Left**: The first page of the PDF from which text will be extracted.
+- **Right**: The extracted text of the first page
 
-### Example Output Image
-The following image shows how the converted text would look in the first two paragraphs.
-<img src="images/example-output.png" title="Example Output Image">
+<img src="images/example-situation.png" title="Example Situation. Left: input, Right: Output">
+
+
 
 ## Quick Usage
 ```sh
