@@ -4,6 +4,10 @@ import os
 import shutil
 
 def pdf_to_images():
+    '''
+    Takes the PDF file, and converts each page into a PDF.
+    Returns the number of images retrieved and the image objects.
+    '''
     options = None
     with open("options.json", "r") as f:
         options = json.load(f)
@@ -19,6 +23,9 @@ def pdf_to_images():
     return len(images), images
     
 def save_images(images):
+    '''
+    Takes the image objects as parameter and saves them onto a temp folder
+    '''
     if os.path.isdir(".tmp"):
         remove_temp()
         
@@ -28,6 +35,9 @@ def save_images(images):
         image.save(".tmp/img-{}.jpeg".format(i))
 
 def remove_temp():
+    '''
+    Removes the temp folder along with all its contents
+    '''
     shutil.rmtree(".tmp")
 
 # dry run the above functions
