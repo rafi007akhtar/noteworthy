@@ -29,6 +29,94 @@ SOS_INDEX = 0
 MAX_SEQ_LEN = 28
 EOS_INDEX = 1
 TOTAL_TASKS = 3
+ALLOWED_DEVICES = ["CPU", "GPU", "FPGA", "HHDL", "MYRIAD"]
+
+def files_exist(files):
+    '''
+    Checks if the files entered exist or not
+    '''
+    for file in files:
+        if not os.path.isfile(file):
+            return False
+    return True
+
+def check_extension(name, extension):
+    '''
+    Check if the file matches with the expected extension
+    '''
+    return name.lower().endswith(extension)
+
+def check_options():
+    '''
+    Checks whether all options entered by the user in options.json are correct
+    '''
+    # Check if all the keys are correct
+    assert list(options.keys()) == ['input', 'output', 'detector_model_xml', 'encoder_model_xml', 'decoder_model_xml', 'probability_threshold', 'alphabet', 'CPU_extenstion_path', 'device_name', 'jpegopt']
+    
+    # Retrieve the keys
+    inputOpt = options["input"]
+    output =  options["output"]
+    detector_xml, encoder_xml, decoder_xml = options["detector_model_xml"], options["encoder_model_xml"], options["decoder_model_xml"]
+    pt = float(options["probability_threshold"])
+    alphabet = options["alphabet"]
+    CPU = options["CPU_extenstion_path"]
+    device_name = options["device_name"]
+    jpegopt = options["jpegopt"]
+    
+    # Make sure the mandatory keys have values
+    try:
+        assert inputOpt and output and detector_xml and encoder_xml and decoder_xml and pt and alphabet and device_name
+    except:
+        print ("Error: One or more of the mandatory keys have no value. Refer to the README for the list of mandatory keys, and make sure they all have values")
+        return -1
+    
+    # Check input and output
+    if not (os.path.isfile(inputOpt) and check_extension(inputOpt, ".pdf")):
+        print ("Error: Input file error. \nEither the file is missing, or the file isn't a PDF.")
+        return -1
+    if not (check_extension(output, ".txt") or check_extension(output, ".text")):
+        print ("Error: Output file is not a text file. Text files can only end in 'txt' or 'text'")
+        return -1
+    
+    # Check the models
+    if not (
+        check_extension(detector_xml, ".xml") and 
+        check_extension(encoder_xml, ".xml") and 
+        check_extension(decoder_xml, ".xml") and 
+        files_exist([detector_xml, encoder_xml, decoder_xml])
+    ):
+        print("Error: The models are not supplied correctly. Please check all three models are provided.")
+        return -1
+    
+    # Check the probability threshold
+    if not (pt >=0 and pt <= 1):
+        print ("Error: Probability threshold not in the correct range [0,1].")
+        return -1
+        
+    # Check for the existence of CPU path
+    if CPU_EXT and not os.path.isfile(CPU_EXT):
+        print("CPU extension file does not exist")
+        return -1
+    
+    # Check for correct device name
+    if device_name not in ALLOWED_DEVICES:
+        print ("Error: Device name invalid. Check README for the list of valid device names")
+        return -1
+        
+    # Lastly, check for jpegopt
+    quality, progressive, optimize = int(jpegopt["quality"]), jpegopt["progressive"], jpegopt["optimize"]
+    if quality < 0 or quality > 100:
+        print ("Error: Quality not in range [0, 100]")
+        return -1
+    if progressive not in ["True", "False"]:
+        print ("Error: Progressive needs to a boolean")
+        return -1
+    if  optimize not in ["True", "False"]:
+        print ("Error: Optimize needs to a boolean")
+        return -1
+    
+    # If all goes well, flash the green signal
+    return 0
 
 def get_bin(xml):
     '''
@@ -197,7 +285,10 @@ def perform_inference():
 
 
 def main():
-    perform_inference()
+    if not check_options():
+        perform_inference()
+    else:
+        print("Please make sure all options are entered correctly, and try again.")
 
 
 if __name__ == "__main__":
