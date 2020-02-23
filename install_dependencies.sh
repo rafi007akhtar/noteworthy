@@ -12,7 +12,7 @@ num=4
 
 echo ""
 echo "Install dependency 1 of $num: OpenCV"
-$pip3 install opencv-python
+sudo apt-get install python3-opencv
 
 echo ""
 echo "Install dependency 2 of $num: Poppler"
