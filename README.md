@@ -1,4 +1,4 @@
-# :notebook: noteworthy
+# :pencil: noteworthy
 
 Edge application that converts written notes from a PDF into text.
 
@@ -12,10 +12,10 @@ source /opt/intel/openvino/bin/setupvars.sh
 python3 app.py
 ```
 
-## Basic Idea behind Noteworthy
+## :bulb: Basic Idea behind Noteworthy
 
 This app:
-- takes a PDF document as an input,
+- takes a PDF document as the input,
 - goes through all the pages of the PDF,
 - extracts text from all pages, and
 - dumps the texts into a text file that you can later refer to as notes.
@@ -23,7 +23,7 @@ This app:
 ### :repeat: Example Input and Output
 The set of images below show an input-output situation.
 - **Input (left)**: The first page of the PDF from which text will be extracted. This input is provided in the [options.json](options.json) file as value to the `input` key.
-- **Output (right)**: The extracted text of the first page. The text file is is stored in the path and name specified in the [options.json](options.json) file as value to the `output` key.
+- **Output (right)**: The extracted text of the first page. The text file is stored in the path and name specified in the [options.json](options.json) file as value to the `output` key.
 
 <img src="images/example-situation.png" title="Example Situation. Left: input, Right: Output">
 
@@ -40,7 +40,7 @@ The set of images below show an input-output situation.
     - [Poppler](https://pypi.org/project/python-poppler-qt5/)
     - [Pdf2Image](https://pypi.org/project/pdf2image/)
 
-> **Important.** This project straight-up assumes you have OpenVINO toolkit installed in your device. If not, please install by going to [this](https://software.intel.com/en-us/openvino-toolkit/choose-download?) link it before proceeding further with the instructions.
+> **Important.** This project straight-up assumes that you have the OpenVINO toolkit installed in your device. If not, please install by going to [this](https://software.intel.com/en-us/openvino-toolkit/choose-download?) link it before proceeding any further with the instructions.
 
 ## :ballot_box_with_check: Installation
 1. Clone this repository, and enter into it.
@@ -61,6 +61,22 @@ The set of images below show an input-output situation.
     source /opt/intel/openvino/bin/setupvars.sh
     ```
 
+## :open_file_folder: Project Structure
+
+On installation, you will get the following files:
+- **[app.py](app.py)**. The main Python program that you need to run this project (instructions [below](#runner-execution)).
+- **[options.json](options.json)**. The JSON file that houses all the user configuration and settings for the project. Description of each option is given [below](#floppy_disk-user-settings-and-configurations).
+- **[install_dependencies.sh](install_dependencies.sh)**. This file is used for installing all **Python-based dependencies**, meaning all the Python libraries mentioned in point #3 of [Dependencies](#black_square_button-dependencies) can be installed with this file. Please do **NOT** change anything in this file (unless you are trying to [contribute](CONTRIBUTING.md) to this repo).
+- **[pdffed.py](pdffed.py)**. A helper file that helps [app.py](app.py) for handling PDFs. You will not have to worry about this file. Please do **NOT** change anything in this file (unless you are trying to [contribute](CONTRIBUTING.md) to this repo).
+
+Apart from these, you also get the following directories.
+- **[inputs](inputs/)**. The default directory to house all your input PDF files. You can change it by specifying your value to the `input` key in the [options.json](options.json) file.
+- **[outputs](outputs/)**. The default output directory, also changeable by specifying value to the `output` key in the [options.json] file.
+- **[models](models/)**. Contains all the models needed for this project, and more. The models I used for this project are as follows. All of these are pre-trained models available in the [OpenVINO Model Zoo](http://docs.openvinotoolkit.org/latest/_models_intel_index.html) of Pre-trained Models.
+    1. [text-spotting-0001-detector](http://docs.openvinotoolkit.org/latest/_models_intel_text_spotting_0001_detector_description_text_spotting_0001_detector.html)
+    2. [text-spotting-0001-recognizer-decoder](http://docs.openvinotoolkit.org/latest/_models_intel_text_spotting_0001_recognizer_decoder_description_text_spotting_0001_recognizer_decoder.html)
+    3. [text-spotting-0001-recognizer-encoder](http://docs.openvinotoolkit.org/latest/_models_intel_text_spotting_0001_recognizer_encoder_description_text_spotting_0001_recognizer_encoder.html)
+
 ## :runner: Execution
 _Run_ the following command
 ```sh
@@ -68,7 +84,7 @@ python3 app.py
 ```
 That's it! It's that simple.
 
-Now view the output in the default output file, [outputs/notes.txt](outputs/notes.txt)
+Running the above command takes the input PDF document, converts it all into text, and dumps that text onto the output text file. Both the input and output files are specified in the [options.json](options.json) file.
 
 ## :floppy_disk: User Settings and Configurations
 Please note that this program takes in **NO** command-line arguments.
@@ -98,7 +114,8 @@ It looks like this on installation.
 }
 ```
 
-Let us see what each of these means. Note that the ones marked with exclamations :exclamation: are **mandatory**, meaning that they must **NOT** be left blank!
+Let us see what each of these means. 
+>**Note.** The keys marked with exclamations :exclamation: are **mandatory**, meaning that their values must **NOT** be left blank!
 
 1. :exclamation: `inputs`. Path to the input PDF file that needs to be converted
 2. :exclamation: `output`. Specifies where and to which file will the output text be dumped.
