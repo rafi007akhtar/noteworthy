@@ -40,7 +40,7 @@ The set of images below show an input-output situation.
     - [Poppler](https://pypi.org/project/python-poppler-qt5/)
     - [Pdf2Image](https://pypi.org/project/pdf2image/)
 
-> **Important.** This project straight-up assumes that you have the OpenVINO toolkit installed in your device. If not, please install by going to [this](https://software.intel.com/en-us/openvino-toolkit/choose-download?) link it before proceeding any further with the instructions.
+>:warning: **Important.** This project straight-up assumes that you have the OpenVINO toolkit installed in your device. If not, please install by going to [this](https://software.intel.com/en-us/openvino-toolkit/choose-download?) link it before proceeding any further with the instructions.
 
 ## :ballot_box_with_check: Installation
 1. Clone this repository, and enter into it.
@@ -55,11 +55,10 @@ The set of images below show an input-output situation.
     sh install_dependencies.sh
     ```
 3. Initialize the environment variables
-    > **Important.** Steps 1 and 2 need to be performed only once, whereas this step needs to be performed on every new session
-
     ```sh
     source /opt/intel/openvino/bin/setupvars.sh
     ```
+     >:warning: **Important.** Steps 1 and 2 need to be performed only once, whereas this step needs to be performed on every new session
 
 ## :open_file_folder: Project Structure
 
@@ -86,6 +85,20 @@ That's it! It's that simple.
 
 Running the above command takes the input PDF document, converts it all into text, and dumps that text onto the output text file. Both the input and output files are specified in the [options.json](options.json) file.
 
+### :phone: Troubleshooting
+It is possible you might run into a following error.
+```
+Traceback (most recent call last):
+  File "app.py", line 6, in <module>
+    from openvino.inference_engine import IECore, IENetwork
+ModuleNotFoundError: No module named 'openvino'
+```
+It means the environment varaibles are not initialized in current session. Intialize them by running the following command.
+```sh
+source /opt/intel/openvino/bin/setupvars.sh
+```
+
+
 ## :floppy_disk: User Settings and Configurations
 Please note that this program takes in **NO** command-line arguments.
 
@@ -94,12 +107,12 @@ Instead, all options that a user might want to set has to be set through the JSO
 It looks like this on installation.
 ```json
 {
-    "input": "input.pdf",
+    "input": "inputs/input.pdf",
     "output": "outputs/notes.txt",
     
-    "detector_model_xml": "models/intel/text-spotting-0001-detector/FP32/text-spotting-0001-detector.xml",
-    "encoder_model_xml": "models/intel/text-spotting-0001-recognizer-encoder/FP32/text-spotting-0001-recognizer-encoder.xml",
-    "decoder_model_xml": "models/intel/text-spotting-0001-recognizer-decoder/FP32/text-spotting-0001-recognizer-decoder.xml",
+    "detector_model_xml": "models/intel/text-spotting-0001-detector/FP16/text-spotting-0001-detector.xml",
+    "encoder_model_xml": "models/intel/text-spotting-0001-recognizer-encoder/FP16/text-spotting-0001-recognizer-encoder.xml",
+    "decoder_model_xml": "models/intel/text-spotting-0001-recognizer-decoder/FP16/text-spotting-0001-recognizer-decoder.xml",
     
     "probability_threshold": "0.5",
     "alphabet": "  0123456789abcdefghijklmnopqrstuvwxyz",
@@ -107,7 +120,7 @@ It looks like this on installation.
     "CPU_extenstion_path": "",
     "device_name": "CPU",
     "jpegopt": {
-        "quality": "100",
+        "quality": "50",
         "progressive": "True",
         "optimize": "True"
     }
@@ -115,7 +128,7 @@ It looks like this on installation.
 ```
 
 Let us see what each of these means. 
->**Note.** The keys marked with exclamations :exclamation: are **mandatory**, meaning that their values must **NOT** be left blank!
+>:warning:**Note.** The keys marked with exclamations :exclamation: are **mandatory**, meaning that their values must **NOT** be left blank!
 
 1. :exclamation: `inputs`. Path to the input PDF file that needs to be converted
 2. :exclamation: `output`. Specifies where and to which file will the output text be dumped.
@@ -131,7 +144,7 @@ Let us see what each of these means.
 ## :chart_with_upwards_trend: Areas for Improvement
 The following contains areas where I believe the project needs to improve. While I have suggested some techiques for doing so in some of the points, I myself could not do the same due to lack of time. If you think you can improve this project on these points, please consider checking out [CONTRIBUTING.md](CONTRIBUTING.md) and contribute to this repo!
 
-- **Accuracy.** As you might have seen in the example above, the translated text lacks in accuracy. This is probably because of the models chosen. A better option would be finding a model with higher accuracy, converting it with the Model Optimizer, and feeding it to the program.
+- **Accuracy.** As you might have seen in the [example above](#repeat-example-input-and-output), the translated text lacks in accuracy. This is probably because of the models chosen. A better option would be finding a model with higher accuracy, converting it with the Model Optimizer, and feeding it to the program.
 - **Time complexity.** A PDF file with 6 pages of handwritten texts needs about a minute to get translated with 100% qualtiy setting. That's long! The project needs to be optimized for time, and one way to do it is by introducing multithreading and / or asynchronous inference.
 - **Space complexity.** The environment on which I have worked on constantly gave me warning that I was running out of storage while executing the run file (granted, it was a limited-memory environment). The project needs to be optimized for memory as well.
 
