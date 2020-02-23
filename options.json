@@ -1,6 +1,6 @@
 {
-    "input": "input.pdf",
-    "output": "outputs/notes-2.txt",
+    "input": "inputs/input.pdf",
+    "output": "outputs/notes.txt",
     
     "detector_model_xml": "models/intel/text-spotting-0001-detector/FP16/text-spotting-0001-detector.xml",
     "encoder_model_xml": "models/intel/text-spotting-0001-recognizer-encoder/FP16/text-spotting-0001-recognizer-encoder.xml",
