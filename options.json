@@ -1,10 +1,10 @@
 {
     "input": "input.pdf",
-    "output": "outputs/notes.txt",
+    "output": "outputs/notes-2.txt",
     
-    "detector_model_xml": "models/intel/text-spotting-0001-detector/FP32/text-spotting-0001-detector.xml",
-    "encoder_model_xml": "models/intel/text-spotting-0001-recognizer-encoder/FP32/text-spotting-0001-recognizer-encoder.xml",
-    "decoder_model_xml": "models/intel/text-spotting-0001-recognizer-decoder/FP32/text-spotting-0001-recognizer-decoder.xml",
+    "detector_model_xml": "models/intel/text-spotting-0001-detector/FP16/text-spotting-0001-detector.xml",
+    "encoder_model_xml": "models/intel/text-spotting-0001-recognizer-encoder/FP16/text-spotting-0001-recognizer-encoder.xml",
+    "decoder_model_xml": "models/intel/text-spotting-0001-recognizer-decoder/FP16/text-spotting-0001-recognizer-decoder.xml",
     
     "probability_threshold": "0.5",
     "alphabet": "  0123456789abcdefghijklmnopqrstuvwxyz",
@@ -12,7 +12,7 @@
     "CPU_extenstion_path": "",
     "device_name": "CPU",
     "jpegopt": {
-        "quality": "100",
+        "quality": "50",
         "progressive": "True",
         "optimize": "True"
     }
