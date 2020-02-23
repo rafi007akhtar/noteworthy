@@ -68,11 +68,11 @@ On installation, you will get the following files:
 
 Apart from these, you also get the following directories.
 - **[inputs](inputs/)**. The default directory to house all your input PDF files. You can change it by specifying your value to the `input` key in the [options.json](options.json) file.
-- **[outputs](outputs/)**. The default output directory, also changeable by specifying value to the `output` key in the [options.json] file.
+- **[outputs](outputs/)**. The default output directory, also changeable by specifying value to the `output` key in the [options.json](options.json) file.
 - **[models](models/)**. Contains all the models needed for this project, and more. The models I used for this project are as follows. All of these are pre-trained models available in the [OpenVINO Model Zoo](http://docs.openvinotoolkit.org/latest/_models_intel_index.html) of Pre-trained Models.
     1. [text-spotting-0001-detector](http://docs.openvinotoolkit.org/latest/_models_intel_text_spotting_0001_detector_description_text_spotting_0001_detector.html)
-    2. [text-spotting-0001-recognizer-decoder](http://docs.openvinotoolkit.org/latest/_models_intel_text_spotting_0001_recognizer_decoder_description_text_spotting_0001_recognizer_decoder.html)
-    3. [text-spotting-0001-recognizer-encoder](http://docs.openvinotoolkit.org/latest/_models_intel_text_spotting_0001_recognizer_encoder_description_text_spotting_0001_recognizer_encoder.html)
+    2. [text-spotting-0001-recognizer-encoder](http://docs.openvinotoolkit.org/latest/_models_intel_text_spotting_0001_recognizer_encoder_description_text_spotting_0001_recognizer_encoder.html)
+    3. [text-spotting-0001-recognizer-decoder](http://docs.openvinotoolkit.org/latest/_models_intel_text_spotting_0001_recognizer_decoder_description_text_spotting_0001_recognizer_decoder.html)
 
 ## :runner: Execution
 _Run_ the following command.
@@ -84,7 +84,7 @@ That's it! It's that simple.
 The above command takes the input PDF file and the desired output text file from [options.json](options.json). It then converts the PDF into text, and dumps all them all onto the output text file.
 
 ### :phone: Troubleshooting
-It is possible you might run into a following error.
+It is possible you might run into the following error.
 ```
 Traceback (most recent call last):
   File "app.py", line 6, in <module>
@@ -130,13 +130,13 @@ Let us see what each of these means.
 
 1. :exclamation: `input`. Path to the input PDF file that needs to be converted
 2. :exclamation: `output`. Specifies where and to which file will the output text be dumped.
-3. :exclamation: `detector_model_xml`. Path to where the Text Detector model has been downloaded.
-4. :exclamation: `encoder_model_xml`. Path to where the Text Encoder model has been downloaded.
-5. :exclamation: `decoder_model_xml`. Path to where the Text Detector model has been saved.
+3. :exclamation: `detector_model_xml`. Path to where the [Text Detector](http://docs.openvinotoolkit.org/latest/_models_intel_text_spotting_0001_detector_description_text_spotting_0001_detector.html) model has been downloaded.
+4. :exclamation: `encoder_model_xml`. Path to where the [Text Encoder](http://docs.openvinotoolkit.org/latest/_models_intel_text_spotting_0001_recognizer_decoder_description_text_spotting_0001_recognizer_decoder.html) model has been downloaded.
+5. :exclamation: `decoder_model_xml`. Path to where the [Text Decoder](http://docs.openvinotoolkit.org/latest/_models_intel_text_spotting_0001_recognizer_decoder_description_text_spotting_0001_recognizer_decoder.html) model has been downloaded.
 6. :exclamation: `probability_threshold`. The probability (between 0 and 1) for the confidence threshold. The output classes with scores more than this value will be retained, and the rest shall be filtered out.
 7. :exclamation: `alphabet`. The set of characters that will be used for inference. **Please do NOT change this unless you really know what you are doing.**
 8. `CPU_extenstion_path`. Path to the CPU extension, if any.
-9. `device_name`. The device on which inference will be performed. Can be one among `CPU`, `GPU`, `FPGA`, `HHDL`, and `MYRIAD`.
+9. :exclamation: `device_name`. The device on which inference will be performed. Can be one among `CPU`, `GPU`, `FPGA`, `HHDL`, and `MYRIAD`.
 10. `jpegopt`. The quality of the images obtained from each page of the PDF. Higher quality might result in better accuracy but would also require more time. Allowed range is between [0, 100], and has to be a whole number.
 
 ## :chart_with_upwards_trend: Areas for Improvement
