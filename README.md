@@ -2,15 +2,6 @@
 
 Edge application that converts written notes from a PDF into text.
 
-### :repeat: Example Input and Output
-The set of images below show an input-output situation.
-- **Left**: The first page of the PDF from which text will be extracted.
-- **Right**: The extracted text of the first page
-
-<img src="images/example-situation.png" title="Example Situation. Left: input, Right: Output">
-
-
-
 ## :zap: Quick Usage
 ```sh
 git clone https://github.com/rafi007akhtar/noteworthy.git
@@ -20,6 +11,24 @@ sh install_dependencies.sh
 source /opt/intel/openvino/bin/setupvars.sh
 python3 app.py
 ```
+
+## Basic Idea behind Noteworthy
+
+This app:
+- takes a PDF document as an input,
+- goes through all the pages of the PDF,
+- extracts text from all pages, and
+- dumps the texts into a text file that you can later refer to as notes.
+
+### :repeat: Example Input and Output
+The set of images below show an input-output situation.
+- **Input (left)**: The first page of the PDF from which text will be extracted. This input is provided in the [options.json](options.json) file as value to the `input` key.
+- **Output (right)**: The extracted text of the first page. The text file is is stored in the path and name specified in the [options.json](options.json) file as value to the `output` key.
+
+<img src="images/example-situation.png" title="Example Situation. Left: input, Right: Output">
+
+(More on the [options.json](options.json) file down below.)
+
 
 ## :black_square_button: Dependencies
 
@@ -91,13 +100,13 @@ It looks like this on installation.
 
 Let us see what each of these means. Note that the ones marked with exclamations :exclamation: are **mandatory**, meaning that they must **NOT** be left blank!
 
-1. `inputs`. :exclamation: Path to the input PDF file that needs to be converted
-2. `output`. :exclamation: Specifies where and to which file will the output text be dumped.
-3. `detector_model_xml`. :exclamation: Path to where the Text Detector model has been downloaded.
-4. `encoder_model_xml`. :exclamation: Path to where the Text Encoder model has been downloaded.
-5. `decoder_model_xml`. :exclamation: Path to where the Text Detector model has been saved.
-6. `probability_threshold`. :exclamation: The probability (between 0 and 1) for the confidence threshold. The output classes with scores more than this value will be retained, and the rest shall be filtered out.
-7. `alphabet`. :exclamation: The set of characters that will be used for inference. **Please do NOT change this unless you really know what you are doing.**
+1. :exclamation: `inputs`. Path to the input PDF file that needs to be converted
+2. :exclamation: `output`. Specifies where and to which file will the output text be dumped.
+3. :exclamation: `detector_model_xml`. Path to where the Text Detector model has been downloaded.
+4. :exclamation: `encoder_model_xml`. Path to where the Text Encoder model has been downloaded.
+5. :exclamation: `decoder_model_xml`. Path to where the Text Detector model has been saved.
+6. :exclamation: `probability_threshold`. The probability (between 0 and 1) for the confidence threshold. The output classes with scores more than this value will be retained, and the rest shall be filtered out.
+7. :exclamation: `alphabet`. The set of characters that will be used for inference. **Please do NOT change this unless you really know what you are doing.**
 8. `CPU_extenstion_path`. Path to the CPU extension, if any.
 9. `device_name`. The device on which inference will be performed. Can be one among `CPU`, `GPU`, `FPGA`, `HHDL`, and `MYRIAD`.
 10. `jpegopt`. The quality of the images obtained from each page of the PDF. Higher quality means better accuracy but also requires more time.
