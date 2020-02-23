@@ -6,7 +6,6 @@ Edge application that converts written notes from a PDF into text.
 ```sh
 git clone https://github.com/rafi007akhtar/noteworthy.git
 cd noteworthy
-chmod a+x install_dependencies.sh
 sh install_dependencies.sh
 source /opt/intel/openvino/bin/setupvars.sh
 python3 app.py
@@ -48,23 +47,22 @@ The set of images below show an input-output situation.
     git clone https://github.com/rafi007akhtar/noteworthy.git
     cd noteworthy
     ```
-2. Install dependencies.
+2. If you're using a Debian-based Linux environment, enter the below command to install the Python-based dependencies, as mentioned in point #3 of [Dependencies](#black_square_button-dependencies).
     ```sh
-    # Remember, this will NOT install OpenVINO. OpenVINO is assumed to be already installed
-    chmod a+x install_dependencies.sh
     sh install_dependencies.sh
     ```
+    If you're using any other environment, though, install the mentioned dependencies manually, based on your OS.
 3. Initialize the environment variables
     ```sh
     source /opt/intel/openvino/bin/setupvars.sh
     ```
-     >:warning: **Important.** Steps 1 and 2 need to be performed only once, whereas this step needs to be performed on every new session
+     >:warning: **Important.** Steps 1 and 2 need to be performed only once, whereas this step needs to be performed on every new session.
 
 ## :open_file_folder: Project Structure
 
 On installation, you will get the following files:
 - **[app.py](app.py)**. The main Python program that you need to run this project (instructions [below](#runner-execution)).
-- **[options.json](options.json)**. The JSON file that houses all the user configuration and settings for the project. Description of each option is given [below](#floppy_disk-user-settings-and-configurations).
+- **[options.json](options.json)**. The JSON file that houses all the user configuration and settings for the project. This is the file you will be interacting with the most, as the input PDF and output text file are specified here. Description of each option is given [below](#floppy_disk-user-settings-and-configurations).
 - **[install_dependencies.sh](install_dependencies.sh)**. This file is used for installing all **Python-based dependencies**, meaning all the Python libraries mentioned in point #3 of [Dependencies](#black_square_button-dependencies) can be installed with this file. Please do **NOT** change anything in this file (unless you are trying to [contribute](CONTRIBUTING.md) to this repo).
 - **[pdffed.py](pdffed.py)**. A helper file that helps [app.py](app.py) for handling PDFs. You will not have to worry about this file. Please do **NOT** change anything in this file (unless you are trying to [contribute](CONTRIBUTING.md) to this repo).
 
@@ -77,13 +75,13 @@ Apart from these, you also get the following directories.
     3. [text-spotting-0001-recognizer-encoder](http://docs.openvinotoolkit.org/latest/_models_intel_text_spotting_0001_recognizer_encoder_description_text_spotting_0001_recognizer_encoder.html)
 
 ## :runner: Execution
-_Run_ the following command
+_Run_ the following command.
 ```sh
 python3 app.py
 ```
 That's it! It's that simple.
 
-Running the above command takes the input PDF document, converts it all into text, and dumps that text onto the output text file. Both the input and output files are specified in the [options.json](options.json) file.
+The above command takes the input PDF file and the desired output text file from [options.json](options.json). It then converts the PDF into text, and dumps all them all onto the output text file.
 
 ### :phone: Troubleshooting
 It is possible you might run into a following error.
@@ -128,9 +126,9 @@ It looks like this on installation.
 ```
 
 Let us see what each of these means. 
->:warning:**Note.** The keys marked with exclamations :exclamation: are **mandatory**, meaning that their values must **NOT** be left blank!
+>:warning: **Note.** The keys marked with exclamations :exclamation: are **mandatory**, meaning that their values must **NOT** be left blank!
 
-1. :exclamation: `inputs`. Path to the input PDF file that needs to be converted
+1. :exclamation: `input`. Path to the input PDF file that needs to be converted
 2. :exclamation: `output`. Specifies where and to which file will the output text be dumped.
 3. :exclamation: `detector_model_xml`. Path to where the Text Detector model has been downloaded.
 4. :exclamation: `encoder_model_xml`. Path to where the Text Encoder model has been downloaded.
@@ -139,12 +137,12 @@ Let us see what each of these means.
 7. :exclamation: `alphabet`. The set of characters that will be used for inference. **Please do NOT change this unless you really know what you are doing.**
 8. `CPU_extenstion_path`. Path to the CPU extension, if any.
 9. `device_name`. The device on which inference will be performed. Can be one among `CPU`, `GPU`, `FPGA`, `HHDL`, and `MYRIAD`.
-10. `jpegopt`. The quality of the images obtained from each page of the PDF. Higher quality means better accuracy but also requires more time.
+10. `jpegopt`. The quality of the images obtained from each page of the PDF. Higher quality might result in better accuracy but would also require more time. Allowed range is between [0, 100], and has to be a whole number.
 
 ## :chart_with_upwards_trend: Areas for Improvement
 The following contains areas where I believe the project needs to improve. While I have suggested some techiques for doing so in some of the points, I myself could not do the same due to lack of time. If you think you can improve this project on these points, please consider checking out [CONTRIBUTING.md](CONTRIBUTING.md) and contribute to this repo!
 
 - **Accuracy.** As you might have seen in the [example above](#repeat-example-input-and-output), the translated text lacks in accuracy. This is probably because of the models chosen. A better option would be finding a model with higher accuracy, converting it with the Model Optimizer, and feeding it to the program.
-- **Time complexity.** A PDF file with 6 pages of handwritten texts needs about a minute to get translated with 100% qualtiy setting. That's long! The project needs to be optimized for time, and one way to do it is by introducing multithreading and / or asynchronous inference.
+- **Time complexity.** A PDF file with 6 pages of handwritten texts needs about a minute to get translated with 100% quality setting. That's long! The project needs to be optimized for time, and one way to do it is by introducing multithreading and / or asynchronous inference.
 - **Space complexity.** The environment on which I have worked on constantly gave me warning that I was running out of storage while executing the run file (granted, it was a limited-memory environment). The project needs to be optimized for memory as well.
 
