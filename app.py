@@ -14,16 +14,16 @@ options = None
 with open("options.json", "r") as f:
     options = json.load(f)
 
-# Get the mandatory options
-DETECTOR_PATH = options["detector_model_xml"]
-ENCODER_PATH = options["encoder_model_xml"]
-DECODER_PATH = options["decoder_model_xml"]
-THRESHOLD = float(options["probability_threshold"])
-ALPHABET = options["alphabet"]
-DEVICE = options["device_name"]
-
-# Get the other options
-CPU_EXT = options["CPU_extenstion_path"]
+# Declare the options; they will be initialized later
+INPUT = None
+OUTPUT = None
+DETECTOR_PATH = None
+ENCODER_PATH = None
+DECODER_PATH = None
+THRESHOLD = None
+ALPHABET = None
+DEVICE = None
+CPU_EXT = None
 
 SOS_INDEX = 0
 MAX_SEQ_LEN = 28
@@ -54,57 +54,61 @@ def check_options():
     assert list(options.keys()) == ['input', 'output', 'detector_model_xml', 'encoder_model_xml', 'decoder_model_xml', 'probability_threshold', 'alphabet', 'CPU_extenstion_path', 'device_name', 'jpegopt']
     
     # Retrieve the keys
-    inputOpt = options["input"]
-    output =  options["output"]
-    detector_xml, encoder_xml, decoder_xml = options["detector_model_xml"], options["encoder_model_xml"], options["decoder_model_xml"]
-    pt = float(options["probability_threshold"])
-    alphabet = options["alphabet"]
-    CPU = options["CPU_extenstion_path"]
-    device_name = options["device_name"]
-    jpegopt = options["jpegopt"]
+    global INPUT, OUTPUT, DETECTOR_PATH, ENCODER_PATH, DECODER_PATH, THRESHOLD, ALPHABET, CPU_EXT, DEVICE, JPEGPOT
+    
+    INPUT = options["input"]
+    OUTPUT = options["output"]
+    DETECTOR_PATH = options["detector_model_xml"]
+    ENCODER_PATH = options["encoder_model_xml"]
+    DECODER_PATH = options["decoder_model_xml"]
+    THRESHOLD = float(options["probability_threshold"])
+    ALPHABET = options["alphabet"]
+    CPU_EXT = options["CPU_extenstion_path"]
+    DEVICE = options["device_name"]
+    JPEGPOT = options["jpegopt"]
     
     # Make sure the mandatory keys have values
     try:
-        assert inputOpt and output and detector_xml and encoder_xml and decoder_xml and pt and alphabet and device_name
+        assert INPUT and OUTPUT and DETECTOR_PATH and ENCODER_PATH and DECODER_PATH and THRESHOLD and ALPHABET and DEVICE
     except:
         print ("Error: One or more of the mandatory keys have no value. Refer to the README for the list of mandatory keys, and make sure they all have values")
         return -1
     
     # Check input and output
-    if not (os.path.isfile(inputOpt) and check_extension(inputOpt, ".pdf")):
+    if not (os.path.isfile(INPUT) and check_extension(INPUT, ".pdf")):
         print ("Error: Input file error. \nEither the file is missing, or the file isn't a PDF.")
         return -1
-    if not (check_extension(output, ".txt") or check_extension(output, ".text")):
+    if not (check_extension(OUTPUT, ".txt") or check_extension(OUTPUT, ".text")):
         print ("Error: Output file is not a text file. Text files can only end in 'txt' or 'text'")
         return -1
     
     # Check the models
     if not (
-        check_extension(detector_xml, ".xml") and 
-        check_extension(encoder_xml, ".xml") and 
-        check_extension(decoder_xml, ".xml") and 
-        files_exist([detector_xml, encoder_xml, decoder_xml])
+        check_extension(DETECTOR_PATH, ".xml") and 
+        check_extension(ENCODER_PATH, ".xml") and 
+        check_extension(DECODER_PATH, ".xml") and 
+        files_exist([DETECTOR_PATH, ENCODER_PATH, DECODER_PATH])
     ):
         print("Error: The models are not supplied correctly. Please check all three models are provided.")
         return -1
     
     # Check the probability threshold
-    if not (pt >=0 and pt <= 1):
+    if not (THRESHOLD >=0 and THRESHOLD <= 1):
         print ("Error: Probability threshold not in the correct range [0,1].")
         return -1
         
     # Check for the existence of CPU path
     if CPU_EXT and not os.path.isfile(CPU_EXT):
-        print("CPU extension file does not exist")
+        print("Error: CPU extension file does not exist")
         return -1
     
     # Check for correct device name
-    if device_name not in ALLOWED_DEVICES:
+    if DEVICE not in ALLOWED_DEVICES:
         print ("Error: Device name invalid. Check README for the list of valid device names")
         return -1
         
     # Lastly, check for jpegopt
-    quality, progressive, optimize = int(jpegopt["quality"]), jpegopt["progressive"], jpegopt["optimize"]
+    quality, progressive, optimize = int(JPEGPOT["quality"]), JPEGPOT["progressive"], JPEGPOT["optimize"]
     if quality < 0 or quality > 100:
         print ("Error: Quality not in range [0, 100]")
         return -1
@@ -128,7 +132,7 @@ def dump_text(texts):
     '''
     Dump the texts obtained onto the output file
     '''
-    with open(options["output"], "a") as f:
+    with open(OUTPUT, "a") as f:
         for text in texts:
             text = str(text) + " "
             f.write(text)
@@ -136,7 +140,7 @@ def dump_text(texts):
 
 def perform_inference():
     '''
-    Performs inference on an input image, given a model.
+    Performs inferences on the given PDF, given all the three models
     '''
     
     # Start the timer
@@ -177,7 +181,7 @@ def perform_inference():
     del decoder_net
     
     # Create a new output file for texts
-    f = open(options["output"], "w")
+    f = open(OUTPUT, "w")
     f.close()
     
     print("TASK 2 OF {}: Retrieve pages from the PDF document".format(TOTAL_TASKS))
