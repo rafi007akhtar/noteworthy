@@ -146,3 +146,5 @@ The following contains areas where I believe the project needs to improve. While
 - **Time complexity.** A PDF file with 6 pages of handwritten texts needs about a minute to get translated with 100% quality setting. That's long! The project needs to be optimized for time, and one way to do it is by introducing multithreading and / or asynchronous inference.
 - **Space complexity.** The environment on which I have worked on constantly gave me warning that I was running out of storage while executing the run file (granted, it was a limited-memory environment). The project needs to be optimized for memory as well.
 
+## License
+[MIT License](LICENSE)
