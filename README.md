@@ -24,7 +24,7 @@ The set of images below show an input-output situation.
 - **Input (left)**: The first page of the PDF from which text will be extracted. This input is provided in the [options.json](options.json) file as value to the `input` key.
 - **Output (right)**: The extracted text of the first page. The text file is stored in the path and name specified in the [options.json](options.json) file as value to the `output` key.
 
-<img src="images/example-situation.png" title="Example Situation. Left: input, Right: Output">
+<img src="images/example-situation-2.png" title="Example Situation. Left: input, Right: Output">
 
 (More on the [options.json](options.json) file down below.)
 
