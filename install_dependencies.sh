@@ -8,7 +8,7 @@ then
     echo "Please install pip3, then run the file again"
     echo "Or install the following packages manually: opencv, poppler, pdf2image, numpy"
 fi
-num=4
+num=5
 
 echo ""
 echo "Install dependency 1 of $num: OpenCV"
@@ -23,5 +23,10 @@ echo "Install dependency 3 of $num: pdf2image"
 $pip3 install pdf2image
 
 echo ""
-echo "Install dependencies 4 of $num: numpy"
+echo "Install dependency 4 of $num: numpy"
 $pip3 install numpy
+
+echo ""
+echo "Install dependency 5 of $num: Pyhunspell"
+sudo apt-get install libhunspell-dev
+$pip install hunspell
