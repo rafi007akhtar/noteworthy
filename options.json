@@ -1,6 +1,6 @@
 {
-    "input": "inputs/input.pdf",
-    "output": "outputs/notes.txt",
+    "input": "inputs/lt.pdf",
+    "output": "outputs/lt-2.txt",
     
     "detector_model_xml": "models/intel/text-spotting-0001-detector/FP16/text-spotting-0001-detector.xml",
     "encoder_model_xml": "models/intel/text-spotting-0001-recognizer-encoder/FP16/text-spotting-0001-recognizer-encoder.xml",
@@ -15,5 +15,9 @@
         "quality": "50",
         "progressive": "True",
         "optimize": "True"
+    },
+    
+    "unstable": {
+        "spellcheck": "y"
     }
 }

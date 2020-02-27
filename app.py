@@ -24,6 +24,7 @@ THRESHOLD = None
 ALPHABET = None
 DEVICE = None
 CPU_EXT = None
+UNSTABLE = None
 
 SOS_INDEX = 0
 MAX_SEQ_LEN = 28
@@ -46,15 +47,36 @@ def check_extension(name, extension):
     '''
     return name.lower().endswith(extension)
 
+def manage_words(word):
+    '''
+    UNSTABLE METHOD
+    Attempts to increase accuracy by returning suggested words for words that do not exist
+    '''
+    import hunspell
+    hobj = hunspell.HunSpell('/usr/share/hunspell/en_US.dic', '/usr/share/hunspell/en_US.aff')
+    if not hobj.spell(word):
+        words = hobj.suggest(word)
+    else:
+        return word
+        
+    wlen = len(words)
+    if wlen == 0:
+        return word
+        
+    words = list(filter(lambda w: len(w) >= len(word), words))
+    word = words[0]
+    
+    return word
+
 def check_options():
     '''
     Checks whether all options entered by the user in options.json are correct
     '''
     # Check if all the keys are correct
-    assert list(options.keys()) == ['input', 'output', 'detector_model_xml', 'encoder_model_xml', 'decoder_model_xml', 'probability_threshold', 'alphabet', 'CPU_extenstion_path', 'device_name', 'jpegopt']
+    assert list(options.keys()) == ['input', 'output', 'detector_model_xml', 'encoder_model_xml', 'decoder_model_xml', 'probability_threshold', 'alphabet', 'CPU_extenstion_path', 'device_name', 'jpegopt', 'unstable']
     
     # Retrieve the keys
-    global INPUT, OUTPUT, DETECTOR_PATH, ENCODER_PATH, DECODER_PATH, THRESHOLD, ALPHABET, CPU_EXT, DEVICE, JPEGPOT
+    global INPUT, OUTPUT, DETECTOR_PATH, ENCODER_PATH, DECODER_PATH, THRESHOLD, ALPHABET, CPU_EXT, DEVICE, JPEGPOT, UNSTABLE
     
     INPUT = options["input"]
     OUTPUT = options["output"]
@@ -66,6 +88,7 @@ def check_options():
     CPU_EXT = options["CPU_extenstion_path"]
     DEVICE = options["device_name"]
     JPEGPOT = options["jpegopt"]
+    UNSTABLE = options["unstable"]
     
     # Make sure the mandatory keys have values
     try:
@@ -107,7 +130,7 @@ def check_options():
         print ("Error: Device name invalid. Check README for the list of valid device names")
         return -1
         
-    # Lastly, check for jpegopt
+    # Check for jpegopt
     quality, progressive, optimize = int(JPEGPOT["quality"]), JPEGPOT["progressive"], JPEGPOT["optimize"]
     if quality < 0 or quality > 100:
         print ("Error: Quality not in range [0, 100]")
@@ -117,6 +140,11 @@ def check_options():
         return -1
     if  optimize not in ["True", "False"]:
         print ("Error: Optimize needs to a boolean")
+        return -1
+    
+    # Check for unstable features
+    if UNSTABLE["spellcheck"] not in ["y", "n"]:
+        print("Error: manage_words can only take the values 'y' or 'n'.")
         return -1
     
     # If all goes well, flash the green signal
@@ -269,6 +297,9 @@ def perform_inference():
                     break
                 text += ALPHABET[prev_symbol_index]
                 hidden = decoder_output["hidden"]
+                
+            if UNSTABLE["spellcheck"] is "y":
+                text = manage_words(text)
             texts.append(text)
             
         pdffed.remove_image(index)
