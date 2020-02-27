@@ -107,7 +107,7 @@ It looks like this on installation.
 ```json
 {
     "input": "inputs/input.pdf",
-    "output": "outputs/notes.txt",
+    "output": "outputs/notes-2.txt",
     
     "detector_model_xml": "models/intel/text-spotting-0001-detector/FP16/text-spotting-0001-detector.xml",
     "encoder_model_xml": "models/intel/text-spotting-0001-recognizer-encoder/FP16/text-spotting-0001-recognizer-encoder.xml",
@@ -122,6 +122,10 @@ It looks like this on installation.
         "quality": "50",
         "progressive": "True",
         "optimize": "True"
+    },
+    
+    "unstable": {
+        "spellcheck": "n"
     }
 }
 ```
@@ -138,8 +142,12 @@ Let us see what each of these means.
 7. :exclamation: `alphabet`. The set of characters that will be used for inference. **Please do NOT change this unless you really know what you are doing.**
 8. `CPU_extenstion_path`. Path to the CPU extension, if any.
 9. :exclamation: `device_name`. The device on which inference will be performed. Can be one among `CPU`, `GPU`, `FPGA`, `HHDL`, and `MYRIAD`.
-10. `jpegopt`. The quality of the images obtained from each page of the PDF. Higher quality might result in better accuracy but would also require more time. Allowed range is between [0, 100], and has to be a whole number.
-11. `unstable` > `spellcheck`. Provides spellchecking of extracted words and maps corrected words to the output file. Set it to `'y'` to turn it on, and `'n'` to turn it off. This option is currently unstable, and consumes more time when turned on, but provides better accuracy. 
+10. `jpegopt` > `quality`. The quality of the images obtained from each page of the PDF. Higher quality might result in better accuracy but would also require more time. Allowed range is between [0, 100], and has to be a whole number.
+11. `unstable` > `spellcheck`. Provides spellchecking of extracted words and maps corrected words to the output file. Set it to `'y'` to turn it on, and `'n'` to turn it off. This option is currently unstable, because:
+    - **it only works on Linux**, and
+    - it consumes more time when turned on, 
+
+    but provides higher accuracy. 
 
 ## :chart_with_upwards_trend: Areas for Improvement
 The following contains areas where I believe the project needs to improve. While I have suggested some techiques for doing so in some of the points, I myself could not do the same due to lack of time. If you think you can improve this project on these points, please consider checking out [CONTRIBUTING.md](CONTRIBUTING.md) and contribute to this repo!

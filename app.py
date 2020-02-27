@@ -62,9 +62,10 @@ def manage_words(word):
     wlen = len(words)
     if wlen == 0:
         return word
-        
-    words = list(filter(lambda w: len(w) >= len(word), words))
-    word = words[0]
+
+    filtered_words = list(filter(lambda w: len(w) >= len(word), words))
+    if len(filtered_words) > 0:
+        word = filtered_words[0]
     
     return word
 
