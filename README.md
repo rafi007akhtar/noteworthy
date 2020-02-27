@@ -38,6 +38,7 @@ The set of images below show an input-output situation.
     - [Numpy](https://numpy.org/)
     - [Poppler](https://pypi.org/project/python-poppler-qt5/)
     - [Pdf2Image](https://pypi.org/project/pdf2image/)
+    - [Pyhunspell](https://pypi.org/project/hunspell/)
 
 >:warning: **Important.** This project straight-up assumes that you have the OpenVINO toolkit installed in your device. If not, please install by going to [this](https://software.intel.com/en-us/openvino-toolkit/choose-download?) link it before proceeding any further with the instructions.
 
@@ -138,6 +139,7 @@ Let us see what each of these means.
 8. `CPU_extenstion_path`. Path to the CPU extension, if any.
 9. :exclamation: `device_name`. The device on which inference will be performed. Can be one among `CPU`, `GPU`, `FPGA`, `HHDL`, and `MYRIAD`.
 10. `jpegopt`. The quality of the images obtained from each page of the PDF. Higher quality might result in better accuracy but would also require more time. Allowed range is between [0, 100], and has to be a whole number.
+11. `unstable` > `spellcheck`. Provides spellchecking of extracted words and maps corrected words to the output file. Set it to `'y'` to turn it on, and `'n'` to turn it off. This option is currently unstable, and consumes more time when turned on, but provides better accuracy. 
 
 ## :chart_with_upwards_trend: Areas for Improvement
 The following contains areas where I believe the project needs to improve. While I have suggested some techiques for doing so in some of the points, I myself could not do the same due to lack of time. If you think you can improve this project on these points, please consider checking out [CONTRIBUTING.md](CONTRIBUTING.md) and contribute to this repo!
